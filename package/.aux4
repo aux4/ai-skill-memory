@@ -134,10 +134,10 @@
         {
           "name": "recall",
           "execute": [
-            "echo '## Long-term Memory' && aux4 kb search \"${query}\" --folder ${folder}/long-term 2>/dev/null || echo 'No long-term matches.' && echo '' && echo '## Daily Notes' && grep -rl \"${query}\" ${folder}/daily/*.md 2>/dev/null | sort -r | head -5 | while read f; do echo \"### $(basename $f .md)\"; grep -i \"${query}\" \"$f\"; echo ''; done || echo 'No daily matches.'"
+            "echo '## Long-term Memory' && aux4 kb search \"${query}\" --folder ${folder}/long-term && echo '' && echo '(Recent daily context is available via: aux4 ai skill memory recent / today)'"
           ],
           "help": {
-            "text": "Search both tiers: curated long-term (kb search) + raw daily notes (grep)",
+            "text": "Search curated long-term memory (BM25-ranked kb search); recent daily context is served by recent/today",
             "variables": [
               {
                 "name": "query",

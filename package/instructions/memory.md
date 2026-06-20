@@ -14,7 +14,7 @@ You have two kinds of memory. Use both.
 | `aux4 ai skill memory today` | Read today's daily note |
 | `aux4 ai skill memory recent [days]` | Read daily notes from the last N days (default: 3) |
 | `aux4 ai skill memory remember "<topic>" --content "<text>" [--tags <tags>]` | Save to long-term memory |
-| `aux4 ai skill memory recall "<query>"` | Search across both daily notes and long-term memory |
+| `aux4 ai skill memory recall "<query>"` | Search curated long-term memory (BM25-ranked); use `recent`/`today` for daily context |
 | `aux4 ai skill memory forget "<topic>"` | Remove a long-term memory entry |
 | `aux4 ai skill memory review [days]` | List recent daily notes and long-term memory for curation |
 
@@ -59,10 +59,10 @@ Think of it like a human reviewing their journal: most entries are context that 
 ## Recall Strategy
 
 When searching memory with `recall`:
-- Results come from both tiers -- long-term memory (structured) and daily notes (grep matches)
-- Long-term results are more reliable -- they've been curated
-- Daily results give raw context -- useful for recent events
-- If you need more detail from a daily match, read that day's full note with `today` or `recent`
+- Results come from curated long-term memory, ranked by relevance (BM25 `kb search` over titles, tags, and body)
+- Long-term results are high-signal -- they've been deliberately curated
+- For recent context, read the daily notes directly with `recent` or `today` (whole days, most-recent-first)
+- For ad-hoc search across daily notes, use your own search tools (`searchFiles`/`searchContext`) or `aux4 search` -- `recall` deliberately does not glob the dailies
 
 ## Rules
 

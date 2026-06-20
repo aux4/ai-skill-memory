@@ -21,7 +21,7 @@ aux4 ai skill memory recall "yarn"
 - **Daily notes** — the raw, append-only scratch log. One markdown file per day under `<folder>/daily/YYYY-MM-DD.md`. Cheap to write, never curated. Use `log`, `today`, `recent`.
 - **Long-term memory** — curated, topic-based, searchable, and tagged. Backed by `aux4/kb` under `<folder>/long-term/`. High-signal; distilled from daily notes during review. Use `remember`, `forget`.
 
-`recall` searches both tiers; `review` shows them side by side for curation. Read the full workflow guidance with `aux4 ai skill memory prompt`.
+`recall` searches the long-term tier (BM25-ranked `kb search`); recent daily context is served by `recent`/`today`. `review` shows both tiers side by side for curation. Read the full workflow guidance with `aux4 ai skill memory prompt`.
 
 ## Memory Structure
 
@@ -50,7 +50,7 @@ All commands are contributed to the shared `ai:skill` profile under `memory`.
 | `aux4 ai skill memory today` | Print today's daily note |
 | `aux4 ai skill memory recent [days]` | Print daily notes from the last N days (default: 3) |
 | `aux4 ai skill memory remember "<topic>" --content "<text>" [--tags <tags>]` | Promote a distilled insight to long-term memory |
-| `aux4 ai skill memory recall "<query>"` | Search across both daily notes and long-term memory |
+| `aux4 ai skill memory recall "<query>"` | Search curated long-term memory (BM25-ranked); use `recent`/`today` for daily context |
 | `aux4 ai skill memory forget "<topic>"` | Remove a long-term memory entry |
 | `aux4 ai skill memory review [days]` | Show recent daily notes beside current long-term memory for curation |
 

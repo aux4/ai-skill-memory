@@ -178,6 +178,63 @@ aux4 ai skill memory recall "curated" --folder /tmp/aux4-skill-memory-test
 No matches found.
 ```
 
+## recall with no daily notes (zsh glob bug)
+
+This is the AGC-010 regression scenario: a memory folder that has long-term
+entries but **no `daily/` directory at all**. The old `recall` ran a bare
+`grep -rl ${folder}/daily/*.md`, which under zsh aborts the whole command with
+`zsh:1: no matches found`. The fixed `recall` searches long-term only and must
+return matches with no shell error.
+
+```beforeAll
+rm -rf /tmp/aux4-skill-memory-nodaily && mkdir -p /tmp/aux4-skill-memory-nodaily/long-term
+aux4 ai skill memory remember "no-daily-topic" --content "Recall must work without any daily notes present" --tags "test" --folder /tmp/aux4-skill-memory-nodaily
+```
+
+```afterAll
+rm -rf /tmp/aux4-skill-memory-nodaily
+```
+
+### recall should find the long-term entry with no dailies present
+
+```execute
+aux4 ai skill memory recall "daily" --folder /tmp/aux4-skill-memory-nodaily
+```
+
+```expect:partial
+## Long-term Memory
+```
+
+### recall should surface the matching entry content (BM25)
+
+```execute
+aux4 ai skill memory recall "daily" --folder /tmp/aux4-skill-memory-nodaily
+```
+
+```expect:partial
+no-daily-topic
+```
+
+### recall must NOT print a zsh no-matches glob error
+
+```execute
+aux4 ai skill memory recall "daily" --folder /tmp/aux4-skill-memory-nodaily 2>&1 | grep -c "no matches found" || true
+```
+
+```expect
+0
+```
+
+### recall must NOT glob the daily directory at all
+
+```execute
+grep -c "daily/\*.md" ../.aux4 || true
+```
+
+```expect
+0
+```
+
 ## review
 
 ### should show daily notes and long-term sections
