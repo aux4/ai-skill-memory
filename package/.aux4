@@ -1,0 +1,202 @@
+{
+  "scope": "agent",
+  "name": "skill-memory",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "description": "Native agent skill: two-tier memory (daily notes + curated long-term) backed by aux4/kb",
+  "tags": [
+    "ai",
+    "skill",
+    "ai-skill",
+    "memory",
+    "agent",
+    "knowledge"
+  ],
+  "dependencies": [
+    "aux4/ai-skill",
+    "aux4/kb"
+  ],
+  "profiles": [
+    {
+      "name": "ai:skill",
+      "commands": [
+        {
+          "name": "memory",
+          "execute": [
+            "profile:ai:skill:memory"
+          ],
+          "help": {
+            "text": "Two-tier memory: log to daily notes (raw), promote to long-term (curated), recall across both"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ai:skill:memory",
+      "commands": [
+        {
+          "name": "prompt",
+          "execute": [
+            "cat ${packageDir}/instructions/prompt.md"
+          ],
+          "help": {
+            "text": "Print the two-tier memory workflow guidance (when to log vs remember, recall/review strategy)"
+          }
+        },
+        {
+          "name": "log",
+          "execute": [
+            "mkdir -p ${folder}/daily && DATE=$(date +%Y-%m-%d) && FILE=\"${folder}/daily/$DATE.md\" && if [ ! -f \"$FILE\" ]; then echo \"# $DATE\" > \"$FILE\"; fi && echo \"\" >> \"$FILE\" && echo \"- ${entry}\" >> \"$FILE\" && echo \"Logged to $FILE\""
+          ],
+          "help": {
+            "text": "Append a raw entry to today's daily note (the scratch tier)",
+            "variables": [
+              {
+                "name": "entry",
+                "text": "The text to log",
+                "arg": true
+              },
+              {
+                "name": "folder",
+                "text": "Memory folder path",
+                "default": ".memory"
+              }
+            ]
+          }
+        },
+        {
+          "name": "today",
+          "execute": [
+            "DATE=$(date +%Y-%m-%d) && FILE=\"${folder}/daily/$DATE.md\" && if [ -f \"$FILE\" ]; then cat \"$FILE\"; else echo \"No daily note for $DATE yet.\"; fi"
+          ],
+          "help": {
+            "text": "Print today's daily note",
+            "variables": [
+              {
+                "name": "folder",
+                "text": "Memory folder path",
+                "default": ".memory"
+              }
+            ]
+          }
+        },
+        {
+          "name": "recent",
+          "execute": [
+            "find ${folder}/daily -name '*.md' -type f 2>/dev/null | sort -r | head -${days} | while read f; do cat \"$f\"; echo ''; echo '---'; echo ''; done || echo 'No daily notes found.'"
+          ],
+          "help": {
+            "text": "Print daily notes from the last N days (most recent first)",
+            "variables": [
+              {
+                "name": "days",
+                "text": "Number of days to look back",
+                "default": "3",
+                "arg": true
+              },
+              {
+                "name": "folder",
+                "text": "Memory folder path",
+                "default": ".memory"
+              }
+            ]
+          }
+        },
+        {
+          "name": "remember",
+          "execute": [
+            "aux4 kb add --folder ${folder}/long-term --topic \"${topic}\" --content \"${content}\" --tags ${tags}"
+          ],
+          "help": {
+            "text": "Promote a distilled insight to curated long-term memory (one topic per entry)",
+            "variables": [
+              {
+                "name": "topic",
+                "text": "Topic name for the memory entry",
+                "arg": true
+              },
+              {
+                "name": "content",
+                "text": "Content to remember"
+              },
+              {
+                "name": "tags",
+                "text": "Comma-separated tags",
+                "default": "memory"
+              },
+              {
+                "name": "folder",
+                "text": "Memory folder path",
+                "default": ".memory"
+              }
+            ]
+          }
+        },
+        {
+          "name": "recall",
+          "execute": [
+            "echo '## Long-term Memory' && aux4 kb search \"${query}\" --folder ${folder}/long-term && echo '' && echo '(Recent daily context is available via: aux4 ai skill memory recent / today)'"
+          ],
+          "help": {
+            "text": "Search curated long-term memory (BM25-ranked kb search); recent daily context is served by recent/today",
+            "variables": [
+              {
+                "name": "query",
+                "text": "Search query",
+                "arg": true
+              },
+              {
+                "name": "folder",
+                "text": "Memory folder path",
+                "default": ".memory"
+              }
+            ]
+          }
+        },
+        {
+          "name": "forget",
+          "execute": [
+            "aux4 kb remove --folder ${folder}/long-term --topic \"${topic}\""
+          ],
+          "help": {
+            "text": "Remove a curated long-term memory entry by topic",
+            "variables": [
+              {
+                "name": "topic",
+                "text": "Topic to forget",
+                "arg": true
+              },
+              {
+                "name": "folder",
+                "text": "Memory folder path",
+                "default": ".memory"
+              }
+            ]
+          }
+        },
+        {
+          "name": "review",
+          "execute": [
+            "echo '## Daily Notes for Review' && echo '' && find ${folder}/daily -name '*.md' -type f 2>/dev/null | sort -r | head -${days} | while read f; do cat \"$f\"; echo ''; echo '---'; echo ''; done && echo '' && echo '## Current Long-term Memory' && echo '' && aux4 kb list --folder ${folder}/long-term 2>/dev/null || echo 'No long-term memories yet.'"
+          ],
+          "help": {
+            "text": "Show recent daily notes beside current long-term memory for curation",
+            "variables": [
+              {
+                "name": "days",
+                "text": "Number of days to review",
+                "default": "7",
+                "arg": true
+              },
+              {
+                "name": "folder",
+                "text": "Memory folder path",
+                "default": ".memory"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
